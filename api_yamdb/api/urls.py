@@ -5,7 +5,7 @@ from rest_framework.routers import SimpleRouter
 
 app_name = 'api'
 
-
+router = SimpleRouter()
 
 urlpatterns = [
     # path('v1/auth/token/', <Написать из views>.as_view(), name='get_token'),
