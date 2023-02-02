@@ -8,9 +8,9 @@ from rest_framework.viewsets import (
 )
 
 # from api.permissions import OwnerOrReadOnly
-from api.serializers import TitleSerializer
+from api.serializers import TitleSerializer, ReviewSerializer
 
-from reviews.models import Title
+from reviews.models import Title, Review
 
 
 class TitleViewSet(ModelViewSet):
@@ -21,3 +21,8 @@ class TitleViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+
+class ReviewViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
