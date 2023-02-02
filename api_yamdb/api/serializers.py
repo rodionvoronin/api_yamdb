@@ -33,18 +33,3 @@ class ReviewSerializer(ModelSerializer):
         fields = '__all__'
         model = Review
         read_only_fields = ('title', 'author')
-
-
-class CommentSerializer(ModelSerializer):
-    author = SlugRelatedField(
-        read_only=True,
-        slug_field='username',
-    )
-    review = PrimaryKeyRelatedField(
-        read_only=True,
-    )
-
-    class Meta:
-        model = Comment
-        fields = '__all__'
-        read_only_fields = ('review', 'author')
