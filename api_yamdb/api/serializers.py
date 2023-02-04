@@ -3,8 +3,8 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
 from rest_framework.serializers import (
-    CurrentUserDefault, ModelSerializer, SlugRelatedField, ValidationError,
-    PrimaryKeyRelatedField, IntegerField,
+    ModelSerializer, SlugRelatedField, ValidationError,
+    PrimaryKeyRelatedField, IntegerField, SerializerMethodField
 )
 from django.core.validators import MaxValueValidator, MinValueValidator
 # from rest_framework.validators import UniqueTogetherValidator
