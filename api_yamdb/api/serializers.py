@@ -11,7 +11,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 import datetime
 
-from reviews.models import Category, Genre, Title, Review
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 User = get_user_model()
@@ -68,6 +68,17 @@ class TitleNotGetSerializer(ModelSerializer):
         model = Title
 
 
+class CommentSerializer(ModelSerializer):
+    review = PrimaryKeyRelatedField(
+        read_only=True,
+    )
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
+        read_only_fields = ('review', 'author')
+        
+        
 class ReviewSerializer(ModelSerializer):
     author = SlugRelatedField(
         read_only=True,

@@ -1,4 +1,3 @@
-
 from django.shortcuts import get_object_or_404
 from rest_framework.filters import SearchFilter
 from rest_framework.viewsets import ModelViewSet
@@ -9,7 +8,6 @@ from api.serializers import CategorySerializer, GenreSerializer, TitleGetSeriali
 from reviews.models import Category, Genre, Title, Review
 
 
-
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminUserOrReadOnly,)
@@ -17,7 +15,7 @@ class TitleViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    
+
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleGetSerializer
@@ -57,3 +55,19 @@ class GenreViewSet(ModelViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
     permission_classes = (IsAdminUserOrReadOnly,)
+
+class CommentViewSet(ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAdminUserOrReadOnly,)
+
+    def get_review(self):
+        review_id = self.kwargs.get('review_id')
+        return get_object_or_404(Review, pk=review_id)
+
+    def get_queryset(self):
+        review = self.get_review()
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = self.get_review()
+        serializer.save(author=self.request.user, review=review)
