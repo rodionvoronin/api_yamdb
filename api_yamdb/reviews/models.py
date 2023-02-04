@@ -9,37 +9,41 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
+
+    class Meta:
+        ordering = ('slug', )
+    
+    def __str__(self):
+        return self.name
+
     
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
 
+    class Meta:
+        ordering = ('slug', )
+    
+    def __str__(self):
+        return self.name
+
+
 class Title(models.Model):
     name = models.CharField(max_length=256)
+    year = models.IntegerField()
+    description = models.TextField()
+    genre = models.ManyToManyField(
+        Genre
+    )
     category = models.ForeignKey(
         Category,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        related_name='titles'
+        related_name='titles',
     )
-    genre = models.ForeignKey(
-        Genre,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='titles'
-    )
-    author = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='titles'
-    )
-    year = models.IntegerField()
-    description = models.TextField()
+       
         
     class Meta:
         ordering = ('name', )
