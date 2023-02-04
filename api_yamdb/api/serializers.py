@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.serializers import (
     CurrentUserDefault, ModelSerializer, SlugRelatedField, ValidationError,
-    PrimaryKeyRelatedField,
+    PrimaryKeyRelatedField, IntegerField,
 )
 # from rest_framework.validators import UniqueTogetherValidator
 
@@ -28,8 +28,19 @@ class ReviewSerializer(ModelSerializer):
         slug_field='id',
         queryset=Title.objects.all(),
     )
+    score = IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        required=True,
+    )
+
+    def validate(self, data):
+        if self.context['request'].user == data['reviews']:
+            raise serializers.ValidationError(
+                'Вы уже писали отзыв на это произведение'
+            )
+        return data
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
         read_only_fields = ('title', 'author')
