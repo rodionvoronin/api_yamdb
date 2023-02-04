@@ -1,23 +1,36 @@
-# from django.shortcuts import get_object_or_404
-# from rest_framework.filters import SearchFilter
-# from rest_framework.mixins import CreateModelMixin, ListModelMixin
-# from rest_framework.pagination import LimitOffsetPagination
-# from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.viewsets import (
-    GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
-)
+from rest_framework.filters import SearchFilter
+from rest_framework.viewsets import ModelViewSet
 
-# from api.permissions import OwnerOrReadOnly
-from api.serializers import TitleSerializer
+from api.permissions import IsAdminUserOrReadOnly
+from api.serializers import CategorySerializer, GenreSerializer, TitleGetSerializer, TitleNotGetSerializer
 
-from reviews.models import Title
+from reviews.models import Category, Genre, Title
 
 
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-#     permission_classes = (OwnerOrReadOnly,)
-#     pagination_class = LimitOffsetPagination
+    permission_classes = (IsAdminUserOrReadOnly,)
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleGetSerializer
+        return TitleNotGetSerializer   
+    
+
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminUserOrReadOnly,)
+
+
+class GenreViewSet(ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminUserOrReadOnly,)
