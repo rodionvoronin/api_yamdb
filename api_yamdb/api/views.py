@@ -1,10 +1,13 @@
+
+from django.shortcuts import get_object_or_404
 from rest_framework.filters import SearchFilter
 from rest_framework.viewsets import ModelViewSet
 
 from api.permissions import IsAdminUserOrReadOnly
 from api.serializers import CategorySerializer, GenreSerializer, TitleGetSerializer, TitleNotGetSerializer
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review
+
 
 
 class TitleViewSet(ModelViewSet):
@@ -12,10 +15,30 @@ class TitleViewSet(ModelViewSet):
     permission_classes = (IsAdminUserOrReadOnly,)
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+    
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleGetSerializer
-        return TitleNotGetSerializer   
+        return TitleNotGetSerializer
+
+
+class ReviewViewSet(ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAdminUserOrReadOnly,)
+
+    def get_title(self):
+        title_id = self.kwargs.get('title_id')
+        return get_object_or_404(Title, pk=title_id)
+
+    def get_queryset(self):
+        title = self.get_title()
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = self.get_title()
+        serializer.save(author=self.request.user, title=title)
     
 
 class CategoryViewSet(ModelViewSet):
