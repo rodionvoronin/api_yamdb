@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.filters import SearchFilter
 from rest_framework.viewsets import ModelViewSet
 
-from api.permissions import IsAdminUserOrReadOnly
+from api.permissions import IsAdminUserOrReadOnly, IsAdminModeratOrAuthorPermission
 from api.serializers import (
     CategorySerializer, GenreSerializer, TitleGetSerializer, 
     TitleNotGetSerializer, ReviewSerializer, CommentSerializer,
@@ -60,7 +60,7 @@ class GenreViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = (IsAdminModeratOrAuthorPermission,)
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
