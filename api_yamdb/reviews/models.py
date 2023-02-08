@@ -1,8 +1,70 @@
-from django.contrib.auth import get_user_model
+
+from django.contrib.auth.models import AbstractUser
+# from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-User = get_user_model()
+# User = get_user_model()
+USER = 'user'
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+
+USER_ROLES = [
+    (USER, USER),
+    (ADMIN, ADMIN),
+    (MODERATOR, MODERATOR),
+]
+
+
+class User(AbstractUser):
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    role = models.CharField(
+        verbose_name='Роль',
+        max_length=20,
+        choices=USER_ROLES,
+        default=USER,
+        blank=True
+    )
+    bio = models.TextField(
+        verbose_name='Биография',
+        blank=True,
+    )
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=150,
+        blank=True
+    )
+    last_name = models.CharField(
+        verbose_name='фамилия',
+        max_length=150,
+        blank=True
+    )
+
+    @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):
@@ -12,11 +74,11 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('slug', )
-    
+
     def __str__(self):
         return self.name
 
-    
+
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
@@ -24,7 +86,7 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('slug', )
-    
+
     def __str__(self):
         return self.name
 
@@ -43,8 +105,8 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         related_name='titles',
     )
-       
-        
+
+
     class Meta:
         ordering = ('name', )
 
