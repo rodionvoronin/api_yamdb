@@ -12,7 +12,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from api.permissions import IsAdminUserOrReadOnly, AdminOnly
+from api.permissions import IsAdminUserOrReadOnly, IsAdminModeratOrAuthorPermission, AdminOnly
+
 from api.serializers import (
     CategorySerializer, GenreSerializer, TitleGetSerializer, SignUpSerializer, 
     TitleNotGetSerializer, ReviewSerializer, CommentSerializer, UsersSerializer, NotAdminSerializer, GetTokenSerializer
@@ -172,7 +173,7 @@ class GenreViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = (IsAdminModeratOrAuthorPermission,)
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')

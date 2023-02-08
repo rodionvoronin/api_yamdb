@@ -131,7 +131,6 @@ class ReviewSerializer(ModelSerializer):
                 raise ValidationError(
                     'Отзыв уже существует'
                 )
-
         return data
 
     class Meta:
