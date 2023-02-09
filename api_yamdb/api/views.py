@@ -1,8 +1,11 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.db.models import Avg
+# from django_filters import rest_framework as filters
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, TitleFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,11 +23,17 @@ from .serializers import (AdminSerializer, CategorySerializer,
                           TokenSerializer, UserSerializer)
 
 
-class TitleViewSet(ModelViewSet):
-    queryset = Title.objects.all()
-    permission_classes = (IsAdminUserOrReadOnly,)
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+# class WithoutPatсhPutViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+#                              mixins.DestroyModelMixin,
+#                              viewsets.GenericViewSet):
+#     pass
 
+class TitleViewSet(ModelViewSet):
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    permission_classes = (IsAdminUserOrReadOnly,)
+    # filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TitleFilter
+        
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -71,7 +80,7 @@ class GenreViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = (IsAdminModeratOrAuthorPermission,)
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
