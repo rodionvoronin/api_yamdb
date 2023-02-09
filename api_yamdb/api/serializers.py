@@ -99,6 +99,10 @@ class TitleNotGetSerializer(ModelSerializer):
 
 
 class CommentSerializer(ModelSerializer):
+    author = SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+    )
     review = PrimaryKeyRelatedField(
         read_only=True,
     )
@@ -118,7 +122,12 @@ class ReviewSerializer(ModelSerializer):
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         required=True,
     )
-    
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['author'] = UsersSerializer(instance.author).data['username']
+        return representation
+
     def validate(self, data):
         request = self.context['request']
         author = request.user
@@ -134,4 +143,4 @@ class ReviewSerializer(ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         model = Review
-        read_only_fields = ('title', 'author',)
+        read_only_fields = ('author', 'title',)

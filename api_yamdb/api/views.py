@@ -16,7 +16,8 @@ from api.permissions import IsAdminUserOrReadOnly, IsAdminModeratOrAuthorPermiss
 
 from api.serializers import (
     CategorySerializer, GenreSerializer, TitleGetSerializer, SignUpSerializer, 
-    TitleNotGetSerializer, ReviewSerializer, CommentSerializer, UsersSerializer, NotAdminSerializer, GetTokenSerializer
+    TitleNotGetSerializer, ReviewSerializer, CommentSerializer, UsersSerializer, 
+    NotAdminSerializer, GetTokenSerializer
 )
 from api.filters import TitleFilter
 from reviews.models import Category, Genre, Title, Review, User
@@ -130,7 +131,7 @@ class TitleViewSet(ModelViewSet):
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = (IsAdminModeratOrAuthorPermission,)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
