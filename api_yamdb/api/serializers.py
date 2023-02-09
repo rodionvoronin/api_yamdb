@@ -81,7 +81,6 @@ class TitleNotGetSerializer(ModelSerializer):
     genre = SlugRelatedField(
         queryset=Genre.objects.all(), slug_field='slug', many=True
     )
-    # allow_null = True
     category = SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug'
     )
@@ -96,7 +95,6 @@ class TitleNotGetSerializer(ModelSerializer):
         fields = (
             'id', 'name', 'year', 'description', 'genre','category',
         )
-        # read_only_fields = ('author',)
         model = Title
 
 

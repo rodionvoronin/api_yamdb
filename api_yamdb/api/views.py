@@ -118,15 +118,9 @@ class APISignup(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# class WithoutPatсhPutViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-#                              mixins.DestroyModelMixin,
-#                              viewsets.GenericViewSet):
-#     pass
-
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminUserOrReadOnly,)
-    # filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):

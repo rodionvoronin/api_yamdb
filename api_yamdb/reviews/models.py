@@ -63,7 +63,7 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.TextField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
 
@@ -75,7 +75,7 @@ class Category(models.Model):
 
     
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.TextField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
 
@@ -87,24 +87,17 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.TextField(max_length=256)
     year = models.IntegerField()
-    description = models.TextField()
-    genre = models.ManyToManyField(
-        Genre
-    )
+    description = models.TextField(blank=True)
+    genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
         Category,
-        blank=True,
         null=True,
         on_delete=models.SET_NULL,
         related_name='titles',
-    )
-       
+    )     
         
-    class Meta:
-        ordering = ('name', )
-
     def __str__(self):
         return self.name
 
