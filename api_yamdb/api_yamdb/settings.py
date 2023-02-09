@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django_filters',
     'api',
     'reviews',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +126,4 @@ SIMPLE_JWT = {
 
 
 AUTH_USER_MODEL = 'reviews.User'
+STATIC_ROOT = BASE_DIR / 'static/data'

@@ -1,8 +1,13 @@
 
 from django.contrib.auth.models import AbstractUser
 # from django.contrib.auth import get_user_model
-from django.db import models
+from django.contrib.auth.tokens import default_token_generator
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from .validators import validate_username
 
 # User = get_user_model()
 USER = 'user'
@@ -18,6 +23,7 @@ USER_ROLES = [
 
 class User(AbstractUser):
     username = models.CharField(
+        validators=(validate_username,),
         max_length=150,
         unique=True,
         blank=False,
@@ -46,9 +52,16 @@ class User(AbstractUser):
         blank=True
     )
     last_name = models.CharField(
-        verbose_name='фамилия',
+        verbose_name='Фамилия',
         max_length=150,
         blank=True
+    )
+    confirmation_code = models.CharField(
+        verbose_name='Код подтверждения',
+        max_length=255,
+        null=True,
+        blank=False,
+        default='XXXXX'
     )
 
     @property
@@ -67,10 +80,19 @@ class User(AbstractUser):
         return self.username
 
 
+@receiver(post_save, sender=User)
+def post_save(sender, instance, created, **kwargs):
+    if created:
+        confirmation_code = default_token_generator.make_token(
+            instance
+        )
+        instance.confirmation_code = confirmation_code
+        instance.save()
+
+
 class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
-
 
     class Meta:
         ordering = ('slug', )
@@ -82,7 +104,6 @@ class Category(models.Model):
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
-
 
     class Meta:
         ordering = ('slug', )
@@ -105,7 +126,6 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         related_name='titles',
     )
-
 
     class Meta:
         ordering = ('name', )

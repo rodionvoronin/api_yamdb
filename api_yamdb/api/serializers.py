@@ -1,20 +1,21 @@
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
 from rest_framework.serializers import (
     ModelSerializer, SlugRelatedField, ValidationError,
-    PrimaryKeyRelatedField, IntegerField, SerializerMethodField
+    PrimaryKeyRelatedField, IntegerField, SerializerMethodField,
+    CharField
 )
 from django.core.validators import MaxValueValidator, MinValueValidator
 # from rest_framework.validators import UniqueTogetherValidator
 
 import datetime
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment, User
 
 
-User = get_user_model()
+# User = get_user_model()
 
 
 class CategorySerializer(ModelSerializer):
@@ -35,7 +36,7 @@ class TitleGetSerializer(ModelSerializer):
     rating = SerializerMethodField()
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
-  
+
     def get_rating(self, obj):
         pass
 
@@ -77,8 +78,8 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = '__all__'
         read_only_fields = ('review', 'author')
-        
-        
+
+
 class ReviewSerializer(ModelSerializer):
     author = SlugRelatedField(
         read_only=True,
@@ -106,3 +107,35 @@ class ReviewSerializer(ModelSerializer):
         model = Review
         read_only_fields = ('title', 'author')
 
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+
+
+class AdminSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+
+
+class TokenSerializer(ModelSerializer):
+    username = CharField(required=True)
+    confirmation_code = CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
+class SignUpSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
