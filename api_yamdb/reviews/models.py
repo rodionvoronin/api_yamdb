@@ -1,50 +1,67 @@
-# from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+# from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from .validators import validate_username
 
 # User = get_user_model()
-
 USER = 'user'
-MODERATOR = 'moderator'
 ADMIN = 'admin'
-USER_RU = 'юзер'
-MODERATOR_RU = 'модератор'
-ADMIN_RU = 'админ'
-ROLES = (
-    (USER, USER_RU),
-    (MODERATOR, MODERATOR_RU),
-    (ADMIN, ADMIN_RU),
-)
+MODERATOR = 'moderator'
+
+USER_ROLES = [
+    (USER, USER),
+    (ADMIN, ADMIN),
+    (MODERATOR, MODERATOR),
+]
 
 
 class User(AbstractUser):
-    username = models.CharField(validators=(validate_username,),
-                                max_length=150,
-                                unique=True,
-                                blank=False,
-                                null=False,)
-    email = models.EmailField(verbose_name='E-Mail',
-                              unique=True,
-                              max_length=254,
-                              blank=False,
-                              null=False,)
-    bio = models.TextField(verbose_name="О себе",
-                           blank=True,
-                           null=True,
-                           max_length=300,)
-    first_name = models.CharField('имя',
-                                  max_length=150,
-                                  blank=True)
-    last_name = models.CharField('фамилия',
-                                 max_length=150,
-                                 blank=True)
-    role = models.CharField(verbose_name='Уровень доступа',
-                            choices=ROLES,
-                            default=USER,
-                            max_length=50)
+    username = models.CharField(
+        validators=(validate_username,),
+        max_length=150,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    role = models.CharField(
+        verbose_name='Роль',
+        max_length=20,
+        choices=USER_ROLES,
+        default=USER,
+        blank=True
+    )
+    bio = models.TextField(
+        verbose_name='Биография',
+        blank=True,
+    )
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=150,
+        blank=True
+    )
+    last_name = models.CharField(
+        verbose_name='Фамилия',
+        max_length=150,
+        blank=True
+    )
+    confirmation_code = models.CharField(
+        verbose_name='Код подтверждения',
+        max_length=255,
+        null=True,
+        blank=False,
+        default='XXXXX'
+    )
 
     @property
     def is_user(self):
@@ -62,26 +79,34 @@ class User(AbstractUser):
         return self.username
 
 
+@receiver(post_save, sender=User)
+def post_save(sender, instance, created, **kwargs):
+    if created:
+        confirmation_code = default_token_generator.make_token(
+            instance
+        )
+        instance.confirmation_code = confirmation_code
+        instance.save()
+
+
 class Category(models.Model):
     name = models.TextField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
-
     class Meta:
         ordering = ('slug', )
-    
+
     def __str__(self):
         return self.name
 
-    
+
 class Genre(models.Model):
     name = models.TextField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
-
     class Meta:
         ordering = ('slug', )
-    
+
     def __str__(self):
         return self.name
 
@@ -96,8 +121,11 @@ class Title(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         related_name='titles',
-    )     
-        
+    )
+
+    class Meta:
+        ordering = ('name', )
+
     def __str__(self):
         return self.name
 

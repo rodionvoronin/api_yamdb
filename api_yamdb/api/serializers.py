@@ -1,10 +1,11 @@
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
 from rest_framework.serializers import (
-    CharField, EmailField, ModelSerializer, Serializer, SlugRelatedField, ValidationError,
-    PrimaryKeyRelatedField, IntegerField
+    CharField, ModelSerializer, SlugRelatedField, 
+    ValidationError, PrimaryKeyRelatedField, IntegerField, 
+    CharField,
 )
 from django.core.validators import MaxValueValidator, MinValueValidator
 # from rest_framework.validators import UniqueTogetherValidator
@@ -14,42 +15,6 @@ import datetime
 from reviews.models import Category, Genre, Title, Review, Comment, User
 from reviews.validators import validate_username
 
-
-# User = get_user_model()
-
-
-class UsersSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'bio', 'first_name', 'last_name', 'email', 'role',
-        )
-
-
-class NotAdminSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
-        )
-        read_only_fields = ('role',)
-
-
-class GetTokenSerializer(Serializer):
-    username = CharField(
-        required=True)
-    confirmation_code = CharField(
-        required=True)
-
-
-class SignUpSerializer(Serializer):
-    email = EmailField(
-        required=True,
-        max_length=254,)
-    username = CharField(
-        required=True,
-        validators=[validate_username],
-        max_length=150)
 
 class CategorySerializer(ModelSerializer):
     class Meta:
@@ -70,6 +35,9 @@ class TitleGetSerializer(ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
   
+    def get_rating(self, obj):
+        pass
+
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre','category',
@@ -111,8 +79,8 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = '__all__'
         read_only_fields = ('review', 'author',)
-        
-        
+
+
 class ReviewSerializer(ModelSerializer):
     author = SlugRelatedField(
         read_only=True,
@@ -125,7 +93,7 @@ class ReviewSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['author'] = UsersSerializer(instance.author).data['username']
+        representation['author'] = UserSerializer(instance.author).data['username']
         return representation
 
     def validate(self, data):
@@ -144,3 +112,69 @@ class ReviewSerializer(ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         model = Review
         read_only_fields = ('author', 'title',)
+
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+
+
+class AdminSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+
+
+class TokenSerializer(ModelSerializer):
+    username = CharField(required=True)
+    confirmation_code = CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
+class SignUpSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+
+
+class AdminSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+
+
+class TokenSerializer(ModelSerializer):
+    username = CharField(required=True)
+    confirmation_code = CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
+class SignUpSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')

@@ -7,3 +7,5 @@ pytest
 pytest-django
 pytest-pythonpath
 djangorestframework-simplejwt
+django_filters
+django-import-export

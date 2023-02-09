@@ -12,7 +12,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -27,6 +26,7 @@ INSTALLED_APPS = [
     'django_filters',
     'api',
     'reviews',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -125,9 +125,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-SUPPORT_MAIL = 'support@yamdb.com'
 
 AUTH_USER_MODEL = 'reviews.User'
-
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+STATIC_ROOT = BASE_DIR / 'static/data'
+IMPORT_EXPORT_USE_TRANSACTIONS = True

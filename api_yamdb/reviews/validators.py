@@ -1,4 +1,5 @@
 import re
+
 from django.core.exceptions import ValidationError
 
 
@@ -8,6 +9,8 @@ def validate_username(value):
             ('Имя пользователя не может быть <me>.'),
             params={'value': value},
         )
-    if re.search(r'^[-a-zA-Z0-9_]+$', value) is None:
+    if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
         raise ValidationError(
-            ('Не допустимые символы '), params={'value': value},)
+            (f'Не допустимые символы <{value}> в нике.'),
+            params={'value': value},
+        )
