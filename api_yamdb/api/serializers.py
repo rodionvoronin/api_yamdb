@@ -1,4 +1,3 @@
-# from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
@@ -8,12 +7,10 @@ from rest_framework.serializers import (
     CharField,
 )
 from django.core.validators import MaxValueValidator, MinValueValidator
-# from rest_framework.validators import UniqueTogetherValidator
 
 import datetime
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
-from reviews.validators import validate_username
 
 
 class CategorySerializer(ModelSerializer):

@@ -1,18 +1,18 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.db.models import Avg
-# from django_filters import rest_framework as filters
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter, TitleFilter
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, User
+from .filters import TitleFilter
 from .permissions import (AdminOnly, IsAdminModeratOrAuthorPermission,
                           IsAdminUserOrReadOnly)
 
@@ -52,22 +52,23 @@ class ReviewViewSet(ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CategoryViewSet(ModelViewSet):
+class CreateDestroyListViewSet(
+    mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin,
+    GenericViewSet
+):
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminUserOrReadOnly,)
+
+class CategoryViewSet(CreateDestroyListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
-    permission_classes = (IsAdminUserOrReadOnly,)
 
 
-class GenreViewSet(ModelViewSet):
+class GenreViewSet(CreateDestroyListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
-    permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class CommentViewSet(ModelViewSet):
