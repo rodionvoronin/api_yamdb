@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -126,5 +127,10 @@ SIMPLE_JWT = {
 
 
 AUTH_USER_MODEL = 'reviews.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+DEFAULT_FROM_EMAIL = 'admin@admin.com'
+
 STATIC_ROOT = BASE_DIR / 'static/data'
 IMPORT_EXPORT_USE_TRANSACTIONS = True

@@ -1,39 +1,36 @@
-# from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
-
-from rest_framework.serializers import (
-    ModelSerializer, SlugRelatedField, ValidationError,
-    PrimaryKeyRelatedField, IntegerField, SerializerMethodField,
-    CharField
-)
-from django.core.validators import MaxValueValidator, MinValueValidator
-# from rest_framework.validators import UniqueTogetherValidator
-
 import datetime
 
-from reviews.models import Category, Genre, Title, Review, Comment, User
+from django.core.exceptions import ValidationError
+from django.core.validators import (MaxValueValidator,
+                                    MinValueValidator,)
+from django.shortcuts import get_object_or_404
+from rest_framework.serializers import (
+    CharField, IntegerField, ModelSerializer, EmailField,
+    PrimaryKeyRelatedField, SlugRelatedField, ValidationError
+)
 
+from rest_framework.validators import UniqueValidator
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
-# User = get_user_model()
+from reviews.validators import validate_username
 
 
 class CategorySerializer(ModelSerializer):
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug',)
         model = Category
         lookup_field = 'slug'
 
 
 class GenreSerializer(ModelSerializer):
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug',)
         model = Genre
         lookup_field = 'slug'
 
 
 class TitleGetSerializer(ModelSerializer):
-    rating = SerializerMethodField()
+    rating = IntegerField(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
 
@@ -41,16 +38,16 @@ class TitleGetSerializer(ModelSerializer):
         pass
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category',
+        )
         model = Title
 
 
 class TitleNotGetSerializer(ModelSerializer):
-    rating = SerializerMethodField()
     genre = SlugRelatedField(
         queryset=Genre.objects.all(), slug_field='slug', many=True
     )
-    # allow_null = True
     category = SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug'
     )
@@ -61,15 +58,18 @@ class TitleNotGetSerializer(ModelSerializer):
             raise ValidationError('Проверьте год!')
         return value
 
-    def get_rating(self, obj):
-        pass
-
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'description', 'genre', 'category',
+        )
         model = Title
 
 
 class CommentSerializer(ModelSerializer):
+    author = SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+    )
     review = PrimaryKeyRelatedField(
         read_only=True,
     )
@@ -77,7 +77,7 @@ class CommentSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
-        read_only_fields = ('review', 'author')
+        read_only_fields = ('review', 'author',)
 
 
 class ReviewSerializer(ModelSerializer):
@@ -89,6 +89,12 @@ class ReviewSerializer(ModelSerializer):
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         required=True,
     )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['author'] = UserSerializer(
+            instance.author).data['username']
+        return representation
 
     def validate(self, data):
         request = self.context['request']
@@ -103,12 +109,21 @@ class ReviewSerializer(ModelSerializer):
         return data
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date',)
         model = Review
-        read_only_fields = ('title', 'author')
+        read_only_fields = ('author', 'title',)
 
 
 class UserSerializer(ModelSerializer):
+    username = CharField(
+        required=True,
+        max_length=150,
+        validators=[
+            validate_username,
+            UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
     class Meta:
         model = User
         fields = (
@@ -116,6 +131,7 @@ class UserSerializer(ModelSerializer):
             'last_name', 'bio', 'role')
 
 
+"""
 class AdminSerializer(ModelSerializer):
     class Meta:
         model = User
@@ -123,6 +139,7 @@ class AdminSerializer(ModelSerializer):
             'username', 'email', 'first_name',
             'last_name', 'bio', 'role')
         read_only_fields = ('role',)
+"""
 
 
 class TokenSerializer(ModelSerializer):
@@ -135,6 +152,21 @@ class TokenSerializer(ModelSerializer):
 
 
 class SignUpSerializer(ModelSerializer):
+    username = CharField(
+        validators=(
+            validate_username,
+            UniqueValidator(queryset=User.objects.all()),),
+        max_length=150,
+        required=True
+
+    )
+    email = EmailField(
+        validators=(
+            UniqueValidator(queryset=User.objects.all()),
+        ),
+        max_length=254,
+        required=True
+    )
 
     class Meta:
         model = User
