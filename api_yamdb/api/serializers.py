@@ -1,16 +1,18 @@
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
-
-from rest_framework.serializers import (
-    CharField, ModelSerializer, SlugRelatedField, 
-    ValidationError, PrimaryKeyRelatedField, IntegerField, 
-    CharField,
-)
-from django.core.validators import MaxValueValidator, MinValueValidator
-
 import datetime
 
-from reviews.models import Category, Genre, Title, Review, Comment, User
+from django.core.exceptions import ValidationError
+from django.core.validators import (MaxValueValidator,
+                                    MinValueValidator,)
+from django.shortcuts import get_object_or_404
+from rest_framework.serializers import (
+    CharField, IntegerField, ModelSerializer, EmailField,
+    PrimaryKeyRelatedField, SlugRelatedField, ValidationError
+)
+
+from rest_framework.validators import UniqueValidator
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
+from reviews.validators import validate_username
 
 
 class CategorySerializer(ModelSerializer):
@@ -31,13 +33,13 @@ class TitleGetSerializer(ModelSerializer):
     rating = IntegerField(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
-  
+
     def get_rating(self, obj):
         pass
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre','category',
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category',
         )
         model = Title
 
@@ -58,7 +60,7 @@ class TitleNotGetSerializer(ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'description', 'genre','category',
+            'id', 'name', 'year', 'description', 'genre', 'category',
         )
         model = Title
 
@@ -90,7 +92,8 @@ class ReviewSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['author'] = UserSerializer(instance.author).data['username']
+        representation['author'] = UserSerializer(
+            instance.author).data['username']
         return representation
 
     def validate(self, data):
@@ -112,6 +115,15 @@ class ReviewSerializer(ModelSerializer):
 
 
 class UserSerializer(ModelSerializer):
+    username = CharField(
+        required=True,
+        max_length=150,
+        validators=[
+            validate_username,
+            UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
     class Meta:
         model = User
         fields = (
@@ -119,6 +131,7 @@ class UserSerializer(ModelSerializer):
             'last_name', 'bio', 'role')
 
 
+"""
 class AdminSerializer(ModelSerializer):
     class Meta:
         model = User
@@ -126,6 +139,7 @@ class AdminSerializer(ModelSerializer):
             'username', 'email', 'first_name',
             'last_name', 'bio', 'role')
         read_only_fields = ('role',)
+"""
 
 
 class TokenSerializer(ModelSerializer):
@@ -138,39 +152,21 @@ class TokenSerializer(ModelSerializer):
 
 
 class SignUpSerializer(ModelSerializer):
+    username = CharField(
+        validators=(
+            validate_username,
+            UniqueValidator(queryset=User.objects.all()),),
+        max_length=150,
+        required=True
 
-    class Meta:
-        model = User
-        fields = ('email', 'username')
-
-
-class UserSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
-
-
-class AdminSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
-        read_only_fields = ('role',)
-
-
-class TokenSerializer(ModelSerializer):
-    username = CharField(required=True)
-    confirmation_code = CharField(required=True)
-
-    class Meta:
-        model = User
-        fields = ('username', 'confirmation_code')
-
-
-class SignUpSerializer(ModelSerializer):
+    )
+    email = EmailField(
+        validators=(
+            UniqueValidator(queryset=User.objects.all()),
+        ),
+        max_length=254,
+        required=True
+    )
 
     class Meta:
         model = User
