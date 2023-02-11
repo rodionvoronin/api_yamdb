@@ -1,10 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 # from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
+# from django.contrib.auth.tokens import default_token_generator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+# from django.db.models.signals import post_save
+# from django.dispatch import receiver
 
 from .validators import validate_username
 
@@ -22,6 +22,7 @@ USER_ROLES = [
 
 class User(AbstractUser):
     username = models.CharField(
+        verbose_name='Имя пользователя',
         validators=(validate_username,),
         max_length=150,
         unique=True,
@@ -29,6 +30,7 @@ class User(AbstractUser):
         null=False
     )
     email = models.EmailField(
+        verbose_name='Почта',
         max_length=254,
         unique=True,
         blank=False,
@@ -58,9 +60,7 @@ class User(AbstractUser):
     confirmation_code = models.CharField(
         verbose_name='Код подтверждения',
         max_length=255,
-        null=True,
-        blank=False,
-        default='XXXXX'
+        blank=True,
     )
 
     @property
@@ -79,6 +79,7 @@ class User(AbstractUser):
         return self.username
 
 
+"""
 @receiver(post_save, sender=User)
 def post_save(sender, instance, created, **kwargs):
     if created:
@@ -87,6 +88,7 @@ def post_save(sender, instance, created, **kwargs):
         )
         instance.confirmation_code = confirmation_code
         instance.save()
+"""
 
 
 class Category(models.Model):
@@ -95,6 +97,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('slug', )
+        verbose_name = "Катигория"
+        verbose_name_plural = "Катигории"
 
     def __str__(self):
         return self.name
@@ -106,6 +110,8 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('slug', )
+        verbose_name = "Жанр"
+        verbose_name_plural = "Жанры"
 
     def __str__(self):
         return self.name
@@ -125,6 +131,8 @@ class Title(models.Model):
 
     class Meta:
         ordering = ('name', )
+        verbose_name = "Подпись"
+        verbose_name_plural = "Подписи"
 
     def __str__(self):
         return self.name
@@ -139,7 +147,7 @@ class Review(models.Model):
         User, on_delete=models.CASCADE, related_name='reviews'
     )
     pub_date = models.DateTimeField(
-        'Дата публикации', auto_now_add=True
+        'Дата публикации', auto_now_add=True,
     )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews'
@@ -149,6 +157,8 @@ class Review(models.Model):
         return self.text
 
     class Meta(object):
+        verbose_name = "Обзор"
+        verbose_name_plural = "Обзоры"
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -174,3 +184,7 @@ class Comment(models.Model):
         auto_now_add=True,
         db_index=True
     )
+
+    class Meta(object):
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"

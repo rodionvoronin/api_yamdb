@@ -7,5 +7,6 @@ pytest
 pytest-django
 pytest-pythonpath
 djangorestframework-simplejwt
-django_filters
+django_filter
 django-import-export
+drf-nested-routers
