@@ -149,7 +149,7 @@ class Review(models.Model):
                 name='review'
             )
         ]
-    
+
     def __str__(self):
         return self.text
 
