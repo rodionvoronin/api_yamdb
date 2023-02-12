@@ -74,7 +74,11 @@ class ImportTitleAdmin(ImportExportModelAdmin):
 class ReviewResource(resources.ModelResource):
     class Meta:
         model = Review
-        fields = ('id', 'title_id', 'text', 'author', 'score', 'pub_date')
+        exclude = ('title_id',)
+        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title_id')
+        skip_unchanged = True
+        report_skipped = True
+        raise_errors = False
 
 
 class ImportReviewAdmin(ImportExportModelAdmin):
@@ -85,12 +89,10 @@ class ImportReviewAdmin(ImportExportModelAdmin):
     empty_value_display = '-пусто-'
 
 
-"""
 class CommentResource(resources.ModelResource):
     class Meta:
         model = Comment
         fields = ('id', 'review_id', 'text', 'author', 'pub_date')
-        export_order = ('id', 'author', 'review_id', 'text', 'pub_date')
 
 
 class ImportCommentAdmin(ImportExportModelAdmin):
@@ -99,11 +101,11 @@ class ImportCommentAdmin(ImportExportModelAdmin):
     search_fields = ('id', 'author', 'review', 'text', 'pub_date')
     list_filter = ('author',)
     empty_value_display = '-пусто-'
-"""
+
 
 admin.site.register(User, ImportUserAdmin)
 admin.site.register(Category, ImportCategoryAdmin)
 admin.site.register(Genre, ImportGenreAdmin)
 admin.site.register(Title, ImportTitleAdmin)
 admin.site.register(Review, ImportReviewAdmin)
-# admin.site.register(Comment, ImportCommentAdmin)
+admin.site.register(Comment, ImportCommentAdmin)

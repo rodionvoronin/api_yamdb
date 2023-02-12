@@ -1,26 +1,21 @@
 from django.contrib.auth.models import AbstractUser
-# from django.contrib.auth import get_user_model
-# from django.contrib.auth.tokens import default_token_generator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-# from django.db.models.signals import post_save
-# from django.dispatch import receiver
 
 from .validators import validate_username
 
-# User = get_user_model()
-USER = 'user'
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-
-USER_ROLES = [
-    (USER, USER),
-    (ADMIN, ADMIN),
-    (MODERATOR, MODERATOR),
-]
-
 
 class User(AbstractUser):
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+
+    USER_ROLES = [
+        (USER, USER),
+        (ADMIN, ADMIN),
+        (MODERATOR, MODERATOR),
+    ]
+
     username = models.CharField(
         verbose_name='Имя пользователя',
         validators=(validate_username,),
@@ -65,30 +60,21 @@ class User(AbstractUser):
 
     @property
     def is_user(self):
-        return self.role == USER
+        return self.role == User.USER
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == User.ADMIN
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return self.role == User.MODERATOR
+
+    class Meta:
+        ordering = ('username', )
 
     def __str__(self):
         return self.username
-
-
-"""
-@receiver(post_save, sender=User)
-def post_save(sender, instance, created, **kwargs):
-    if created:
-        confirmation_code = default_token_generator.make_token(
-            instance
-        )
-        instance.confirmation_code = confirmation_code
-        instance.save()
-"""
 
 
 class Category(models.Model):
@@ -97,8 +83,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('slug', )
-        verbose_name = "Катигория"
-        verbose_name_plural = "Катигории"
+        verbose_name = 'Катигория'
+        verbose_name_plural = 'Катигории'
 
     def __str__(self):
         return self.name
@@ -110,8 +96,8 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('slug', )
-        verbose_name = "Жанр"
-        verbose_name_plural = "Жанры"
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
@@ -119,7 +105,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField(max_length=256)
-    year = models.IntegerField()
+    year = models.PositiveBigIntegerField(db_index=True)
     description = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
@@ -131,8 +117,8 @@ class Title(models.Model):
 
     class Meta:
         ordering = ('name', )
-        verbose_name = "Подпись"
-        verbose_name_plural = "Подписи"
+        verbose_name = 'Подписи'
+        verbose_name_plural = 'Подписи'
 
     def __str__(self):
         return self.name
@@ -153,18 +139,19 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE, related_name='reviews'
     )
 
-    def __str__(self):
-        return self.text
-
     class Meta(object):
-        verbose_name = "Обзор"
-        verbose_name_plural = "Обзоры"
+        ordering = ('author', )
+        verbose_name = 'Обзор'
+        verbose_name_plural = 'Обзоры'
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='review'
             )
         ]
+
+    def __str__(self):
+        return self.text
 
 
 class Comment(models.Model):
@@ -186,5 +173,6 @@ class Comment(models.Model):
     )
 
     class Meta(object):
-        verbose_name = "Комментарий"
-        verbose_name_plural = "Комментарии"
+        ordering = ('author', )
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'

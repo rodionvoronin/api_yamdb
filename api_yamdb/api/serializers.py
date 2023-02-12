@@ -1,8 +1,7 @@
 import datetime
 
 from django.core.exceptions import ValidationError
-from django.core.validators import (MaxValueValidator,
-                                    MinValueValidator,)
+from django.core.validators import (MaxValueValidator, MinValueValidator,)
 from django.shortcuts import get_object_or_404
 from rest_framework.serializers import (
     CharField, IntegerField, ModelSerializer, EmailField,
@@ -131,17 +130,6 @@ class UserSerializer(ModelSerializer):
             'last_name', 'bio', 'role')
 
 
-"""
-class AdminSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
-        read_only_fields = ('role',)
-"""
-
-
 class TokenSerializer(ModelSerializer):
     username = CharField(required=True)
     confirmation_code = CharField(required=True)
@@ -151,6 +139,8 @@ class TokenSerializer(ModelSerializer):
         fields = ('username', 'confirmation_code')
 
 
+# Проверка на невозможность создания пользавателя
+# c именем == "me" происходит в строке validators=(validate_username, ...
 class SignUpSerializer(ModelSerializer):
     username = CharField(
         validators=(
