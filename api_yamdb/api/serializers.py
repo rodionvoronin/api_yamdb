@@ -131,17 +131,6 @@ class UserSerializer(ModelSerializer):
             'last_name', 'bio', 'role')
 
 
-"""
-class AdminSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
-        read_only_fields = ('role',)
-"""
-
-
 class TokenSerializer(ModelSerializer):
     username = CharField(required=True)
     confirmation_code = CharField(required=True)
