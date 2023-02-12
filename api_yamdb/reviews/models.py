@@ -83,8 +83,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('slug', )
-        verbose_name = 'Катигория'
-        verbose_name_plural = 'Катигории'
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
@@ -117,7 +117,7 @@ class Title(models.Model):
 
     class Meta:
         ordering = ('name', )
-        verbose_name = 'Подписи'
+        verbose_name = 'Подпись'
         verbose_name_plural = 'Подписи'
 
     def __str__(self):
@@ -149,6 +149,9 @@ class Review(models.Model):
                 name='review'
             )
         ]
+    
+    def __str__(self):
+        return self.text
 
     def __str__(self):
         return self.text
