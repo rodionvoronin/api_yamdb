@@ -4,18 +4,18 @@ from django.db import models
 
 from .validators import validate_username
 
-USER = 'user'
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-
-USER_ROLES = [
-    (USER, USER),
-    (ADMIN, ADMIN),
-    (MODERATOR, MODERATOR),
-]
-
 
 class User(AbstractUser):
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+
+    USER_ROLES = [
+        (USER, USER),
+        (ADMIN, ADMIN),
+        (MODERATOR, MODERATOR),
+    ]
+
     username = models.CharField(
         verbose_name='Имя пользователя',
         validators=(validate_username,),
@@ -60,15 +60,18 @@ class User(AbstractUser):
 
     @property
     def is_user(self):
-        return self.role == USER
+        return self.role == User.USER
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == User.ADMIN
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return self.role == User.MODERATOR
+
+    class Meta:
+        ordering = ('username', )
 
     def __str__(self):
         return self.username
@@ -102,7 +105,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField(max_length=256)
-    year = models.PositiveIntegerField()
+    year = models.PositiveBigIntegerField(db_index=True)
     description = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
@@ -137,7 +140,7 @@ class Review(models.Model):
     )
 
     class Meta(object):
-        ordering = ('title', )
+        ordering = ('author', )
         verbose_name = 'Обзор'
         verbose_name_plural = 'Обзоры'
         constraints = [
@@ -147,6 +150,9 @@ class Review(models.Model):
             )
         ]
     
+    def __str__(self):
+        return self.text
+
     def __str__(self):
         return self.text
 
@@ -170,6 +176,6 @@ class Comment(models.Model):
     )
 
     class Meta(object):
-        ordering = ('review', )
+        ordering = ('author', )
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'

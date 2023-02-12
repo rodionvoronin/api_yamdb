@@ -160,4 +160,8 @@ def signup(request):
               subject='Confirmation code',
               recipient_list=[email],
               from_email=None)
+# Согласно официальной докккументации - Sending email:
+# если в параметре from_email указано None, джанго будет использвать
+# значение из DEFAULT_FROM_EMAIL указанном в settings.py
+
     return Response(serializer.data, status=status.HTTP_200_OK)
